@@ -17,23 +17,28 @@ public class SocketManager : MonoBehaviour
     static void connect(string token = null) {
         // TODO: Validate the server address and port
         var uri = new Uri(Instance.ServerAddress);
-        Instance.socket = new SocketIOUnity(uri, new SocketIOOptions
+        if (Instance.socket != null)
         {
-            Query = new Dictionary<string, string>
-                {
-                    {"token", "UNITY" }
-                }
-            ,
-            EIO = 4
-            ,
-            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-            Reconnection = true,
-            ReconnectionDelay = 1000,
-            ReconnectionDelayMax = 5000,
-            ReconnectionAttempts = 99999
-            
-        });
-        SocketManager.Instance.socket.JsonSerializer = new NewtonsoftJsonSerializer();
+            Instance.socket.Disconnect();
+        } else {
+            Instance.socket = new SocketIOUnity(uri, new SocketIOOptions
+            {
+                Query = new Dictionary<string, string>
+                    {
+                        {"token", "UNITY" }
+                    }
+                ,
+                EIO = 4
+                ,
+                Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+                Reconnection = true,
+                ReconnectionDelay = 1000,
+                ReconnectionDelayMax = 5000,
+                ReconnectionAttempts = 99999
+                
+            });
+            SocketManager.Instance.socket.JsonSerializer = new NewtonsoftJsonSerializer();
+        }
 
         if(token != null)
         {
