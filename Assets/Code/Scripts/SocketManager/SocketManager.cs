@@ -6,16 +6,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using Newtonsoft.Json.Linq;
 
+// Singleton class
 public class SocketManager : MonoBehaviour
 {
+    public static SocketManager Instance { get; private set; }
     public string ServerAddress = "http://77.71.71.125:5000/";
     public SocketIOUnity socket;
     public string AuthToken = null;
 
-    void connect(string token = null) {
+    static void connect(string token = null) {
         // TODO: Validate the server address and port
-        var uri = new Uri(ServerAddress);
-        socket = new SocketIOUnity(uri, new SocketIOOptions
+        var uri = new Uri(Instance.ServerAddress);
+        Instance.socket = new SocketIOUnity(uri, new SocketIOOptions
         {
             Query = new Dictionary<string, string>
                 {
@@ -31,11 +33,11 @@ public class SocketManager : MonoBehaviour
             ReconnectionAttempts = 99999
             
         });
-        socket.JsonSerializer = new NewtonsoftJsonSerializer();
+        SocketManager.Instance.socket.JsonSerializer = new NewtonsoftJsonSerializer();
 
         if(token != null)
         {
-            socket.Options.ExtraHeaders = new Dictionary<string, string>
+            Instance.socket.Options.ExtraHeaders = new Dictionary<string, string>
             {
                 {"Cookie", "AuthToken=" + token }
             };
@@ -44,13 +46,17 @@ public class SocketManager : MonoBehaviour
         // Print "Connecting..." if no token and "Connecting with token {token}..." if token is provided
         string logMessage = "Connecting" + (token == null ? "..." : " with token " + token + "...");
         Debug.Log(logMessage);
-        socket.Connect();
+        Instance.socket.Connect();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        connect();
+        SocketManager socketManager = SocketManager.Instance;
+        if(socket == null)
+        {
+            connect(AuthToken);
+        }
 
         ///// reserved socketio events
         socket.OnConnected += (sender, e) =>
@@ -139,6 +145,20 @@ public class SocketManager : MonoBehaviour
         else
         {
             return false;
+        }
+    }
+
+    // Awake
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 }
