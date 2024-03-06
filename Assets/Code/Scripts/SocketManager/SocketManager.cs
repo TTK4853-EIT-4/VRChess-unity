@@ -5,6 +5,7 @@ using SocketIOClient.Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 using Newtonsoft.Json.Linq;
+using UnityEngine.SceneManagement;
 
 // Singleton class
 public class SocketManager : MonoBehaviour
@@ -67,6 +68,17 @@ public class SocketManager : MonoBehaviour
         socket.OnConnected += (sender, e) =>
         {
             Debug.Log("socket.OnConnected");
+
+            if (AuthToken != null)
+            {
+                socket.Emit("get_my_user", response =>
+                {
+                    var result = response.GetValue<User>(0);
+                    UserData.Instance.loggedUser = result;
+                    Debug.Log("Logged user: " + result.username);
+                    
+                });
+            }
         };
 
         socket.OnPing += (sender, e) =>
@@ -102,7 +114,7 @@ public class SocketManager : MonoBehaviour
                 connect(data.token);
 
                 // Open the next scene which is not in the build settings
-                //SceneManager.LoadScene("BoardScene", LoadSceneMode.Single);
+                SceneManager.LoadScene("RoomsScene", LoadSceneMode.Single);
             } catch (Exception ex)
             {
                 Debug.Log(ex.ToString());
