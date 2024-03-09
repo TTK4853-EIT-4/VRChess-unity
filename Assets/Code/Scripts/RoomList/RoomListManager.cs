@@ -68,7 +68,6 @@ public class RoomListManager : MonoBehaviour
         // On room_created event
         SocketManager.Instance.socket.On("room_created", response =>
         {
-            Debug.Log("Room created");
             Room room = JsonConvert.DeserializeObject<Room>(response.GetValue<string>(0));
             AddRoom(room);
         });
@@ -76,9 +75,6 @@ public class RoomListManager : MonoBehaviour
         // On room_deleted event
         SocketManager.Instance.socket.On("room_deleted", response =>
         {
-            Debug.Log("Room deleted");
-            
-            // The format is {"room_id": "ksjdhaskjhas"}
             RoomDeletedResponse resp = response.GetValue<RoomDeletedResponse>(0);
             UIRoom room = uIRooms.Find(x => x.room.roomId == resp.roomId);
 
@@ -236,25 +232,47 @@ public class RoomListManager : MonoBehaviour
         // Get the selected option
         string option = change.options[change.value].text;
 
-        if (option == "Join")
+        // Switch case
+        switch (option)
         {
-            Debug.Log("Join room");
-            //JoinRoom(room);
-        }
-        else if (option == "Observe")
-        {
-            Debug.Log("Observe room");
-            //ObserveRoom(room);
-        }
-        else if (option == "Delete")
-        {
-            Debug.Log("Delete room");
-            DeleteRoom(room);
+            case "Join":
+                JoinRoom(room);
+                break;
+            case "Observe":
+                //ObserveRoom(room);
+                break;
+            case "Delete":
+                DeleteRoom(room);
+                break;
         }
 
         Debug.Log(room.roomId);
 
         change.value = 0;
+    }
+
+    // Join room
+    public void JoinRoom(Room room)
+    {
+        var data = new { room_id = room.roomId };
+        
+        SocketManager.Instance.socket.Emit("join_game", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+
+                if (respons.status == "error")
+                {
+                    NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
     }
 
     // Delete room
@@ -285,13 +303,21 @@ public class RoomListManager : MonoBehaviour
     {
         var data = new { };
 
-        // Emit and process the response
+        // Send data and parse the response to create a room
         SocketManager.Instance.socket.Emit("create_room", response =>
         {
             try
             {
                 StatusResponse respons = response.GetValue<StatusResponse>(0);
+
                 UpdateCreateRoomStatusMessage(respons.message, respons.status);
+
+                if (respons.status == "success")
+                {
+                    Room room = JsonConvert.DeserializeObject<Room>(respons.data);
+
+                    // TODO: Open the game scene
+                }
             }
             catch (System.Exception e)
             {
