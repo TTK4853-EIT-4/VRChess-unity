@@ -8,8 +8,16 @@ public class RoomListManager : MonoBehaviour
 
     private Transform roomListContainer;
     private Transform roomRowTemplate;
+    
+    // Create Room Panel
+    public GameObject createRoomPanel;
 
     private List<UIRoom> uIRooms = new List<UIRoom>();
+
+    // Status Message TMPro
+    public TMPro.TextMeshProUGUI createRoomStatusMessageText;
+    private Color errorColor = new Color32(255, 114, 144, 255);
+    private Color successColor = new Color32(147, 255, 114, 255);
 
     // On Awake
     private void Awake()
@@ -18,9 +26,18 @@ public class RoomListManager : MonoBehaviour
         {
             roomListContainer = GameObject.Find("roomListContainer").transform;
             roomRowTemplate = roomListContainer.Find("roomRowTemplate");
+            createRoomPanel = GameObject.Find("Create Room Panel");
+
+            // Hide the create room panel
+            createRoomPanel.SetActive(false);
 
             // Hide the template
             roomRowTemplate.gameObject.SetActive(false);
+
+            UnityThread.executeInUpdate(() =>
+            {
+                createRoomStatusMessageText.enabled = false;
+            });
         }
         catch (System.Exception e)
         {
@@ -150,10 +167,16 @@ public class RoomListManager : MonoBehaviour
             // Add - Select an option - option
             dropdownComponent.options.Add(new TMPro.TMP_Dropdown.OptionData("Select an option"));
 
-            if(UserData.Instance.loggedUser.id == room.roomOwner.id)
+            if(UserData.Instance.loggedUser != null && UserData.Instance.loggedUser.id == room.roomOwner.id)
             {
                 // Add - Delete - option
                 dropdownComponent.options.Add(new TMPro.TMP_Dropdown.OptionData("Delete"));
+
+                // Set background color to #688A98 on roomRowTransform element to indicate that the user is the owner of the room
+                roomRowTransform.GetComponent<UnityEngine.UI.Image>().color = new Color32(104, 138, 152, 170);
+
+                // Add on the top of the roomListContainer element
+                roomRowTransform.SetAsFirstSibling();
             }
             else
             {
@@ -239,6 +262,60 @@ public class RoomListManager : MonoBehaviour
     {
         var data = new { room_id = room.roomId };
         SocketManager.Instance.socket.Emit("delete_room", data);
+    }
+
+    // On Create Room Open Panel Button Click
+    public void OnCreateRoomOpenPanelButtonClick()
+    {
+        UnityThread.executeInUpdate(() =>
+        {
+            createRoomStatusMessageText.enabled = false;
+        });
+        createRoomPanel.SetActive(true);
+    }
+
+    // On Cancel Create Room Button Click
+    public void OnCancelCreateRoomButtonClick()
+    {
+        createRoomPanel.SetActive(false);
+    }
+
+    // On Create Room Button Click
+    public void OnCreateRoomButtonClick()
+    {
+        var data = new { };
+
+        // Emit and process the response
+        SocketManager.Instance.socket.Emit("create_room", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+                UpdateCreateRoomStatusMessage(respons.message, respons.status);
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
+    }
+
+    private void UpdateCreateRoomStatusMessage(string message, string type = "error")
+    {
+        UnityThread.executeInUpdate(() =>
+        {
+            createRoomStatusMessageText.text = message;
+            createRoomStatusMessageText.enabled = true;
+
+            if (type == "error")
+            {
+                createRoomStatusMessageText.color = errorColor;
+            }
+            else
+            {
+                createRoomStatusMessageText.color = successColor;
+            }
+        });
     }
 }
 

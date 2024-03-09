@@ -11,4 +11,7 @@ public class StatusResponse
 
     [JsonProperty("message")]
     public string message { get; set; }
+    
+    [JsonProperty("data")]
+    public string data { get; set; }
 }
