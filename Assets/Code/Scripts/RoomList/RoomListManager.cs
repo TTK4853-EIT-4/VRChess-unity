@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -56,7 +55,6 @@ public class RoomListManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Socket is not connected");
             // Wait for the socket to connect
             SocketManager.Instance.socket.OnConnected += (sender, e) =>
             {
@@ -91,7 +89,6 @@ public class RoomListManager : MonoBehaviour
         // On room_updated event
         SocketManager.Instance.socket.On("room_updated", response =>
         {
-            Debug.Log("Room updated");
             Room room = JsonConvert.DeserializeObject<Room>(response.GetValue<string>(0));
             UpdateRoom(room);
         });
@@ -100,7 +97,6 @@ public class RoomListManager : MonoBehaviour
     // Get all rooms
     public void GetAllRooms()
     {
-        Debug.Log("Getting all rooms");
         SocketManager.Instance.socket.Emit("get_all_rooms", response =>
         {
             try
@@ -110,7 +106,6 @@ public class RoomListManager : MonoBehaviour
 
                 foreach (var room in items)
                 {
-                    Debug.Log(room.roomOwner.username);
                     AddRoom(room);
                 }
             }
@@ -245,9 +240,6 @@ public class RoomListManager : MonoBehaviour
                 DeleteRoom(room);
                 break;
         }
-
-        Debug.Log(room.roomId);
-
         change.value = 0;
     }
 
@@ -265,6 +257,10 @@ public class RoomListManager : MonoBehaviour
                 if (respons.status == "error")
                 {
                     NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
+                }
+                else
+                {
+                    // TODO: Open the game scene
                 }
                 
             }
@@ -344,7 +340,6 @@ public class RoomListManager : MonoBehaviour
         });
     }
 }
-
 
 public class UIRoom
 {

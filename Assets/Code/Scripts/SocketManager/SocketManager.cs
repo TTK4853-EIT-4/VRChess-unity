@@ -75,8 +75,6 @@ public class SocketManager : MonoBehaviour
                 {
                     var result = response.GetValue<User>(0);
                     UserData.Instance.loggedUser = result;
-                    Debug.Log("Logged user: " + result.username);
-                    
                 });
             }
         };
@@ -108,7 +106,6 @@ public class SocketManager : MonoBehaviour
             try
             {
                 var data = responseData.GetValue<AuthenticatedResponse>(0);
-                Debug.Log(data.token);
 
                 AuthToken = data.token;
                 connect(data.token);
