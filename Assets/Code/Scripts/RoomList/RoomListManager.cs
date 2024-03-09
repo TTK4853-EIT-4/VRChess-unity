@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RoomListManager : MonoBehaviour
 {
@@ -254,13 +255,15 @@ public class RoomListManager : MonoBehaviour
             {
                 StatusResponse respons = response.GetValue<StatusResponse>(0);
 
-                if (respons.status == "error")
+                NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
+
+                if (respons.status == "success")
                 {
-                    NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
-                }
-                else
-                {
-                    // TODO: Open the game scene
+                    // Open the game scene. Execute on unity thread
+                    UnityThread.executeInUpdate(() =>
+                    {
+                        SceneManager.LoadScene("GameScene");
+                    });
                 }
                 
             }
@@ -312,7 +315,11 @@ public class RoomListManager : MonoBehaviour
                 {
                     Room room = JsonConvert.DeserializeObject<Room>(respons.data);
 
-                    // TODO: Open the game scene
+                    // Open the game scene. Execute on unity thread
+                    UnityThread.executeInUpdate(() =>
+                    {
+                        SceneManager.LoadScene("GameScene");
+                    });
                 }
             }
             catch (System.Exception e)
