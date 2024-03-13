@@ -22,6 +22,7 @@ Library: C:\UNI\NTNU\2_semester\eit\repos\VRChess-unity\Temp\BurstOutput\tempbur
 --assembly-defines=Unity.RenderPipelines.Core.ShaderLibrary;
 --assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.XR.Interaction.Toolkit;
+--assembly-defines=UnityChessLib;
 --assembly-defines=Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary;
 --assembly-defines=Unity.RenderPipelines.Universal.Runtime;
 --assembly-defines=Unity.Burst;
@@ -102,6 +103,7 @@ Library: C:\UNI\NTNU\2_semester\eit\repos\VRChess-unity\Temp\BurstOutput\tempbur
 --assembly-defines=Unity.RenderPipelines.Core.ShaderLibrary;
 --assembly-defines=Unity.TextMeshPro;
 --assembly-defines=Unity.XR.Interaction.Toolkit;
+--assembly-defines=UnityChessLib;
 --assembly-defines=Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary;
 --assembly-defines=Unity.RenderPipelines.Universal.Runtime;
 --assembly-defines=Unity.Burst;
