@@ -300,7 +300,10 @@ public class RoomListManager : MonoBehaviour
     // On Create Room Button Click
     public void OnCreateRoomButtonClick()
     {
-        var data = new { };
+        var data = new { 
+            player_mode = PlayerMode.Standard, // Standard mode with 2 players on 2 different clients
+            opponent = default(object) // == Null
+        };
 
         // Send data and parse the response to create a room
         SocketManager.Instance.socket.Emit("create_room", response =>
@@ -318,7 +321,7 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
-                        SceneManager.LoadScene("GameScene");
+                        //SceneManager.LoadScene("GameScene");
                     });
                 }
             }
