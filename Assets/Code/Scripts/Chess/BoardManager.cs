@@ -66,7 +66,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager> {
 
 	public void CreateAndPlacePieceGO(Piece piece, Square position) {
 		string modelName = $"{piece.Owner} {piece.GetType().Name}";
-		Debug.Log($"Creating {modelName} at {position}");
+		//Debug.Log($"Creating {modelName} at {position}");
 		
 		GameObject pieceGO = Instantiate(
 

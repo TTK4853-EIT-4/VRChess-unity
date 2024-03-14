@@ -59,7 +59,7 @@ public class RoomListManager : MonoBehaviour
             // Wait for the socket to connect
             SocketManager.Instance.socket.OnConnected += (sender, e) =>
             {
-                Debug.Log("socket.OnConnected");
+                //Debug.Log("socket.OnConnected");
                 GetAllRooms();
             };
         }
@@ -235,7 +235,7 @@ public class RoomListManager : MonoBehaviour
                 JoinRoom(room);
                 break;
             case "Observe":
-                //ObserveRoom(room);
+                ObserveRoom(room);
                 break;
             case "Delete":
                 DeleteRoom(room);
@@ -259,6 +259,52 @@ public class RoomListManager : MonoBehaviour
 
                 if (respons.status == "success")
                 {
+                    // Open the game scene. Execute on unity thread
+                    UnityThread.executeInUpdate(() =>
+                    {
+                        SceneManager.LoadScene("GameScene");
+                    });
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
+    }
+
+    // Observe room
+    public void ObserveRoom(Room room)
+    {
+        var data = new { room_id = room.roomId };
+        
+        SocketManager.Instance.socket.Emit("observe_game", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+
+                NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
+                if (respons.status == "success")
+                {
+                    // Subscribe to the room to receive events
+                    SocketManager.Instance.socket.Emit("subscribe_to_room", response =>
+                    {
+                        var result = response.GetValue<StatusResponse>(0);
+
+                        if (result.status == "success")
+                        {
+                            Debug.Log("Subscribed to room " + room.roomId);
+                        }
+                        else
+                        {
+                            Debug.Log("Failed to subscribe to room " + room.roomId);
+                            return;
+                        }
+
+                    }, data);
+
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
