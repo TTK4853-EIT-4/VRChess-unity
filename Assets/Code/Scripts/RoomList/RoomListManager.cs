@@ -12,6 +12,9 @@ public class RoomListManager : MonoBehaviour
     // Create Room Panel
     public GameObject createRoomPanel;
 
+    // Team color choose dropdown
+    public TMPro.TMP_Dropdown teamColorDropdown;
+
     private List<UIRoom> uIRooms = new List<UIRoom>();
 
     // Status Message TMPro
@@ -340,15 +343,20 @@ public class RoomListManager : MonoBehaviour
     // On Cancel Create Room Button Click
     public void OnCancelCreateRoomButtonClick()
     {
+        // Hide the create room panel
         createRoomPanel.SetActive(false);
+        
+        // Reset the dropdown value
+        teamColorDropdown.value = 0;
     }
 
     // On Create Room Button Click
     public void OnCreateRoomButtonClick()
     {
-        var data = new { 
+        var data = new {
             player_mode = PlayerMode.Standard, // Standard mode with 2 players on 2 different clients
-            opponent = default(object) // == Null
+            opponent = default(object), // == Null
+            side = teamColorDropdown.value == 0 ? "white" : "black"
         };
 
         // Send data and parse the response to create a room
