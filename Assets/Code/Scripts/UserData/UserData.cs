@@ -10,6 +10,9 @@ public class UserData : MonoBehaviour
     public Room currentRoom { get; set; }
     public User opponentUser { get; set; }
 
+    // Specifying the player side (White, Black or Observer)
+	public PlayerSide playerSide { get; set; } = PlayerSide.Observer;
+
 
     private void Awake()
     {
@@ -23,4 +26,11 @@ public class UserData : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    // Enum for the type of the user (White, Black or Observer)
+	public enum PlayerSide {
+		White,
+		Black,
+		Observer
+	}
 }

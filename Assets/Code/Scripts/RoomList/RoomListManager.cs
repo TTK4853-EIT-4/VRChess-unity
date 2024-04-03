@@ -265,6 +265,11 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
+                        // Determine side
+                        UserData.Instance.playerSide = UserData.PlayerSide.Black;
+                        if (room.roomOwnerSide == SideColor.Black) {
+                            UserData.Instance.playerSide = UserData.PlayerSide.White;
+                        }
                         SceneManager.LoadScene("GameScene");
                     });
                 }
@@ -311,6 +316,7 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
+                        UserData.Instance.playerSide = UserData.PlayerSide.Observer;
                         SceneManager.LoadScene("GameScene");
                     });
                 }
@@ -375,7 +381,11 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
-                        //SceneManager.LoadScene("GameScene");
+                        UserData.Instance.playerSide = UserData.PlayerSide.Black;
+                        if (room.roomOwnerSide == SideColor.White) {
+                            UserData.Instance.playerSide = UserData.PlayerSide.White;
+                        }
+                        SceneManager.LoadScene("GameScene");
                     });
                 }
             }
