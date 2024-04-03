@@ -9,7 +9,7 @@ public class GameNetwork : MonoBehaviour
     {
         
         // On piece_moved event
-        SocketManager.Instance.socket.On("piece_moved", (data) =>
+        SocketManager.Instance.socket.On("piece_moved_", (data) =>
         {
             Debug.Log("Piece moved event received");
             Debug.Log(data);
