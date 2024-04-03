@@ -6495,7 +6495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af8c9b4942762834abd2c6b70235fa8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ServerAddress: http://chess.datagonia.no:5000
+  ServerAddress: http://77.71.71.125:5000
   AuthToken: 
 --- !u!4 &1481401411
 Transform:

@@ -8,6 +8,12 @@ public class GameNetwork : MonoBehaviour
     void Start()
     {
         
+        
+    }
+
+    // Awake
+    private void Awake()
+    {
         // On piece_moved event
         SocketManager.Instance.socket.On("piece_moved_", (data) =>
         {
@@ -31,6 +37,26 @@ public class GameNetwork : MonoBehaviour
                 Debug.Log(e);
             }
         });
+
+
+
+        var data = new { room_id = UserData.Instance.currentRoom.roomId };
+        // On game_start event
+        SocketManager.Instance.socket.Emit("subscribe_to_room", response =>
+        {
+            var result = response.GetValue<StatusResponse>(0);
+
+            if (result.status == "success")
+            {
+                Debug.Log("Subscribed to room " + data);
+            }
+            else
+            {
+                Debug.Log("Failed to subscribe to room " + data);
+                return;
+            }
+
+        }, data);
     }
 
     // Update is called once per frame

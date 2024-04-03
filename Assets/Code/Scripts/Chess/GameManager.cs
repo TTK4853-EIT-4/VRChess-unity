@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityChess;
 using UnityChess.Engine;
 using UnityEngine;
@@ -209,6 +210,54 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 
 	private async void OnPieceMoved(Square movedPieceInitialSquare, Transform movedPieceTransform, Transform closestBoardSquareTransform, Piece promotionPiece = null) {
 		Square endSquare = new Square(closestBoardSquareTransform.name);
+
+		string source = movedPieceInitialSquare.ToString();
+		string target = endSquare.ToString();
+		Piece movedPiece = CurrentBoard[movedPieceInitialSquare];
+
+		// Data to send to the socket server if format: { "room_id": "###", "color": "1|2", "move": { "source": "c7", "target": "c5", "piece": "bP" } }
+		var data = new {
+			room_id = UserData.Instance.currentRoom.roomId,
+			color = movedPiece.Owner == Side.White ? "1" : "2",
+			move = new {
+				source = source,
+				target = target,
+				piece = movedPiece.ToShortAlgebraic()
+			}
+		};
+
+		Debug.Log($"Piece {movedPiece.ToShortAlgebraic()} moved from {source} to {target}");
+
+		SocketManager.Instance.socket.Emit("piece_move", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+
+
+                if (respons.status == "success")
+                {
+                    string fen = respons.data;
+					Debug.Log(fen);
+
+					UnityThread.executeInUpdate(() =>
+                    {
+                        LoadGame(fen);
+                    });
+                } else {
+					// It is not a legal move.
+					// Reset the piece to its original position.
+					movedPieceTransform.position = movedPieceTransform.parent.position;
+					Debug.Log(respons.message);
+				}
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
+
+		return;
 
 		if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move)) {
 			movedPieceTransform.position = movedPieceTransform.parent.position;

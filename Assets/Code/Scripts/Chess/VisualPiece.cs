@@ -42,6 +42,20 @@ public class VisualPiece : MonoBehaviour {
 			BoardManager.Instance.SetActiveAllPieces(false);
 		}
 
+		// Check if it is players turn
+		if (GameManager.Instance.SideToMove != PieceColor) {
+			BoardManager.Instance.SetActiveAllPieces(false);
+		}
+
+		// Check if the player is the same color
+		if (UserData.Instance.playerSide == UserData.PlayerSide.White && PieceColor == Side.Black) {
+			BoardManager.Instance.SetActiveAllPieces(false);
+		} else if (UserData.Instance.playerSide == UserData.PlayerSide.Black && PieceColor == Side.White) {
+			BoardManager.Instance.SetActiveAllPieces(false);
+		} else {
+			BoardManager.Instance.EnsureOnlyPiecesOfSideAreEnabled(PieceColor);
+		}
+
 		if (enabled) {
 			piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
 

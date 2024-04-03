@@ -34,6 +34,23 @@ namespace UnityChess {
 			Rook { Owner: Side.Black } => "♖",
 			_ => "."
 		};
+
+		// To Short Algebraic notation for the piece
+		public string ToShortAlgebraic() => this switch {
+			Bishop { Owner: Side.White } => "wB",
+			Bishop { Owner: Side.Black } => "bB",
+			King { Owner: Side.White } => "wK",
+			King { Owner: Side.Black } => "bK",
+			Knight { Owner: Side.White } => "wN",
+			Knight { Owner: Side.Black } => "bN",
+			Queen { Owner: Side.White } => "wQ",
+			Queen { Owner: Side.Black } => "bQ",
+			Pawn { Owner: Side.White } => "wP",
+			Pawn { Owner: Side.Black } => "bP",
+			Rook { Owner: Side.White } => "wR",
+			Rook { Owner: Side.Black } => "bR",
+			_ => "."
+		};
 	}
 
 	public abstract class Piece<T> : Piece where T : Piece<T>, new() {
