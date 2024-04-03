@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 public class SocketManager : MonoBehaviour
 {
     public static SocketManager Instance { get; private set; }
-    public string ServerAddress = "http://77.71.71.125:5000/";
+    public string ServerAddress = "http://chess.datagonia.no:5000/";
     public SocketIOUnity socket;
     public string AuthToken = null;
 

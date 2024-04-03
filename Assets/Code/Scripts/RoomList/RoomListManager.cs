@@ -12,6 +12,9 @@ public class RoomListManager : MonoBehaviour
     // Create Room Panel
     public GameObject createRoomPanel;
 
+    // Team color choose dropdown
+    public TMPro.TMP_Dropdown teamColorDropdown;
+
     private List<UIRoom> uIRooms = new List<UIRoom>();
 
     // Status Message TMPro
@@ -59,7 +62,7 @@ public class RoomListManager : MonoBehaviour
             // Wait for the socket to connect
             SocketManager.Instance.socket.OnConnected += (sender, e) =>
             {
-                Debug.Log("socket.OnConnected");
+                //Debug.Log("socket.OnConnected");
                 GetAllRooms();
             };
         }
@@ -235,7 +238,7 @@ public class RoomListManager : MonoBehaviour
                 JoinRoom(room);
                 break;
             case "Observe":
-                //ObserveRoom(room);
+                ObserveRoom(room);
                 break;
             case "Delete":
                 DeleteRoom(room);
@@ -262,6 +265,58 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
+                        // Determine side
+                        UserData.Instance.playerSide = UserData.PlayerSide.Black;
+                        if (room.roomOwnerSide == SideColor.Black) {
+                            UserData.Instance.playerSide = UserData.PlayerSide.White;
+                        }
+                        SceneManager.LoadScene("GameScene");
+                    });
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
+    }
+
+    // Observe room
+    public void ObserveRoom(Room room)
+    {
+        var data = new { room_id = room.roomId };
+        
+        SocketManager.Instance.socket.Emit("observe_game", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+
+                NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
+                if (respons.status == "success")
+                {
+                    // Subscribe to the room to receive events
+                    SocketManager.Instance.socket.Emit("subscribe_to_room", response =>
+                    {
+                        var result = response.GetValue<StatusResponse>(0);
+
+                        if (result.status == "success")
+                        {
+                            Debug.Log("Subscribed to room " + room.roomId);
+                        }
+                        else
+                        {
+                            Debug.Log("Failed to subscribe to room " + room.roomId);
+                            return;
+                        }
+
+                    }, data);
+
+                    // Open the game scene. Execute on unity thread
+                    UnityThread.executeInUpdate(() =>
+                    {
+                        UserData.Instance.playerSide = UserData.PlayerSide.Observer;
                         SceneManager.LoadScene("GameScene");
                     });
                 }
@@ -294,15 +349,20 @@ public class RoomListManager : MonoBehaviour
     // On Cancel Create Room Button Click
     public void OnCancelCreateRoomButtonClick()
     {
+        // Hide the create room panel
         createRoomPanel.SetActive(false);
+        
+        // Reset the dropdown value
+        teamColorDropdown.value = 0;
     }
 
     // On Create Room Button Click
     public void OnCreateRoomButtonClick()
     {
-        var data = new { 
+        var data = new {
             player_mode = PlayerMode.Standard, // Standard mode with 2 players on 2 different clients
-            opponent = default(object) // == Null
+            opponent = default(object), // == Null
+            side = teamColorDropdown.value == 0 ? "white" : "black"
         };
 
         // Send data and parse the response to create a room
@@ -321,7 +381,11 @@ public class RoomListManager : MonoBehaviour
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
-                        //SceneManager.LoadScene("GameScene");
+                        UserData.Instance.playerSide = UserData.PlayerSide.Black;
+                        if (room.roomOwnerSide == SideColor.White) {
+                            UserData.Instance.playerSide = UserData.PlayerSide.White;
+                        }
+                        SceneManager.LoadScene("GameScene");
                     });
                 }
             }

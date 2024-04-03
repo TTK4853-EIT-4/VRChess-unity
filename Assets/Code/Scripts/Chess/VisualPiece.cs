@@ -36,6 +36,12 @@ public class VisualPiece : MonoBehaviour {
 	}
 
 	public void OnMouseDown() {
+
+		// Disable the white piece if the player is black
+		if (UserData.Instance.playerSide == UserData.PlayerSide.Observer) {
+			BoardManager.Instance.SetActiveAllPieces(false);
+		}
+
 		if (enabled) {
 			piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
 

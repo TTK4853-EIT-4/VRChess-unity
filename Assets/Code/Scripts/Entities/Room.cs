@@ -15,6 +15,12 @@ public enum PlayerMode
     // For BOARD_TWO_PLAYERS the opponent will be set by username on the room creation
 }
 
+public enum SideColor
+{
+    White = 0,
+    Black = 1
+}
+
 [System.Serializable]
 public class Room
 {
@@ -23,6 +29,9 @@ public class Room
 
     [JsonProperty("room_owner")]
     public User roomOwner { get; set; }
+
+    [JsonProperty("room_owner_side")]
+    public SideColor roomOwnerSide { get; set; }
 
     [JsonProperty("room_opponent")]
     public User roomOpponent { get; set; }
