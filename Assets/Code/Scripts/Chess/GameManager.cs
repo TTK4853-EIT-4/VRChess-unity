@@ -6,12 +6,15 @@ using Newtonsoft.Json;
 using UnityChess;
 using UnityChess.Engine;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class GameManager : MonoBehaviourSingleton<GameManager> {
 	public static event Action NewGameStartedEvent;
 	public static event Action GameEndedEvent;
 	public static event Action GameResetToHalfMoveEvent;
 	public static event Action MoveExecutedEvent;
+
+	public VisualPiece selectedPiece { get; set; } = null;
 	
 	public Board CurrentBoard {
 		get {
@@ -318,4 +321,62 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 			? legalMoves
 			: null;
 	}
+
+	// Piece move
+	public void MovePiece(Square start, Square end, VisualPiece promotionPiece) {
+		//if (!game.TryGetLegalMove(start, end, out Movement move)) return;
+		//TryExecuteMove(move);
+
+		Piece movedPiece = CurrentBoard[start];
+
+		// Data to send to the socket server if format: { "room_id": "###", "color": "1|2", "move": { "source": "c7", "target": "c5", "piece": "bP" } }
+		var data = new {
+			room_id = UserData.Instance.currentRoom.roomId,
+			color = movedPiece.Owner == Side.White ? "1" : "2",
+			move = new {
+				source = start.ToString(),
+				target = end.ToString(),
+				piece = movedPiece.ToShortAlgebraic()
+			}
+		};
+
+		Debug.Log($"Piece {movedPiece.ToShortAlgebraic()} moved from {start} to {end}");
+
+		SocketManager.Instance.socket.Emit("piece_move", response =>
+        {
+            try
+            {
+                StatusResponse respons = response.GetValue<StatusResponse>(0);
+
+
+                if (respons.status == "success")
+                {
+                    string fen = respons.data;
+					Debug.Log(fen);
+
+					UnityThread.executeInUpdate(() =>
+                    {
+                        LoadGame(fen);
+                    });
+
+					promotionPiece.ToggleHighlight(false);
+					promotionPiece.RemoveAllHighlights();
+                } else {
+					// It is not a legal move.
+					// Reset the piece to its original position.
+					//movedPieceTransform.position = movedPieceTransform.parent.position;
+					Debug.Log(respons.message);
+					promotionPiece.ToggleHighlight(false);
+					promotionPiece.RemoveAllHighlights();
+				}
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        }, data);
+
+	}
+
+
 }

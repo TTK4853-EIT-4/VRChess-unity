@@ -414,6 +414,16 @@ public class RoomListManager : MonoBehaviour
             }
         });
     }
+
+    // generate a message when the game shuts down or switches to another Scene
+    void OnDestroy()
+    {
+        // Stop listening for events
+        SocketManager.Instance.socket.Off("room_updated");
+        SocketManager.Instance.socket.Off("room_created");
+        SocketManager.Instance.socket.Off("room_deleted");
+
+    }
 }
 
 public class UIRoom

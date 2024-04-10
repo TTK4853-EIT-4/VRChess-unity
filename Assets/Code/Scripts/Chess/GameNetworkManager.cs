@@ -64,4 +64,10 @@ public class GameNetwork : MonoBehaviour
     {
         
     }
+
+    // generate a message when the game shuts down or switches to another Scene
+    void OnDestroy()
+    {
+        
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityChess;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 using static UnityChess.SquareUtil;
 
 public class VisualPiece : MonoBehaviour {
@@ -36,6 +37,8 @@ public class VisualPiece : MonoBehaviour {
 	}
 
 	public void OnMouseDown() {
+
+		Debug.Log("Piece clicked");
 
 		// Disable the white piece if the player is black
 		if (UserData.Instance.playerSide == UserData.PlayerSide.Observer) {
@@ -143,5 +146,82 @@ public class VisualPiece : MonoBehaviour {
 
 			VisualPieceMoved?.Invoke(CurrentSquare, thisTransform, closestSquareTransform);
 		}
+	}
+
+	// On XR select interaction with select arguments
+	public void OnXRPieceSelect(SelectEnterEventArgs args) {
+		if(!enabled)
+			return;
+
+		if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) {
+			ToggleHighlight(false);
+			RemoveAllHighlights();
+			GameManager.Instance.selectedPiece = null;
+			return;
+		} else if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece != this) {
+			Debug.Log("Another piece is already selected");
+			return;
+		}
+
+		GameManager.Instance.selectedPiece = this;
+		ToggleHighlight(true);
+		HighlightLegalMoves();
+	}
+
+	// On XR deselect interaction
+	public void OnXRPieceDeselect(SelectExitEventArgs args) {
+		if(!enabled)
+			return;
+
+		
+
+		//ToggleHighlight(false);
+		//RemoveAllHighlights();
+		//GameManager.Instance.selectedPiece = null;
+	}
+
+	// Toggle on/off the piece highlight
+	public void ToggleHighlight(bool toggle) {
+		if (toggle) {
+			// Change piece material to highlightMaterial.
+			originalMaterial = thisTransform.GetComponent<MeshRenderer>().material;
+			thisTransform.GetComponent<MeshRenderer>().material = highlightMaterial;
+		} else {
+			// Reset piece material to originalMaterial.
+			thisTransform.GetComponent<MeshRenderer>().material = originalMaterial;
+		}
+	}
+
+	// Highlight the legal moves squares
+	public void HighlightLegalMoves() {
+		var piece = GameManager.Instance.CurrentBoard[CurrentSquare];
+		var legalMoves = GameManager.Instance.GetLegalMovesForPiece(piece);
+
+		if (legalMoves.Count == 0) {
+			return;
+		} else {
+			foreach (Movement move in legalMoves) {
+				GameObject squareGO = BoardManager.Instance.GetSquareGOByPosition(move.End);
+				
+				// Highlight position x=0, y=0.05, z=0 of the square.
+				var position = squareGO.transform.position;
+				position.y = position.y + 0.01f;
+
+				GameObject highlight = Instantiate(boardHighlightPrefab, position, Quaternion.identity);
+				
+				// highlight object has BoardHighlight script attached to it. Set the parentSquare to the square of the highlight.
+				highlight.GetComponent<BoardHighlight>().parentSquare = move.End;
+
+				boardHighlights.Add(highlight);
+			}
+		}
+	}
+
+	// Remove all highlights
+	public void RemoveAllHighlights() {
+		foreach (GameObject boardHighlight in boardHighlights) {
+			Destroy(boardHighlight);
+		}
+		boardHighlights.Clear();
 	}
 }
