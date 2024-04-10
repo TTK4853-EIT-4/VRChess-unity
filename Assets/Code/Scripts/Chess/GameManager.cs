@@ -356,18 +356,20 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 
 					UnityThread.executeInUpdate(() =>
                     {
+						promotionPiece.ToggleHighlight(false);
+						promotionPiece.RemoveAllHighlights();
                         LoadGame(fen);
                     });
-
-					promotionPiece.ToggleHighlight(false);
-					promotionPiece.RemoveAllHighlights();
                 } else {
 					// It is not a legal move.
 					// Reset the piece to its original position.
 					//movedPieceTransform.position = movedPieceTransform.parent.position;
 					Debug.Log(respons.message);
-					promotionPiece.ToggleHighlight(false);
-					promotionPiece.RemoveAllHighlights();
+					UnityThread.executeInUpdate(() =>
+                    {
+                        promotionPiece.ToggleHighlight(false);
+						promotionPiece.RemoveAllHighlights();
+                    });
 				}
             }
             catch (System.Exception e)

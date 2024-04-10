@@ -27,6 +27,9 @@ public class VisualPiece : MonoBehaviour {
 	// Highlight Material
 	public Material highlightMaterial;
 
+	// Hover Material
+	public Material hoverMaterial;
+
 
 	private List<GameObject> boardHighlights = new List<GameObject>();
 
@@ -37,7 +40,7 @@ public class VisualPiece : MonoBehaviour {
 	}
 
 	public void OnMouseDown() {
-
+		return;
 		Debug.Log("Piece clicked");
 
 		// Disable the white piece if the player is black
@@ -150,41 +153,63 @@ public class VisualPiece : MonoBehaviour {
 
 	// On XR select interaction with select arguments
 	public void OnXRPieceSelect(SelectEnterEventArgs args) {
-		if(!enabled)
-			return;
+		bool allowed = (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove;
 
-		if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) {
-			ToggleHighlight(false);
-			RemoveAllHighlights();
-			GameManager.Instance.selectedPiece = null;
-			return;
-		} else if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece != this) {
-			Debug.Log("Another piece is already selected");
-			return;
+		if(enabled && allowed) {
+			if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) {
+				ToggleHighlight(false);
+				RemoveAllHighlights();
+				GameManager.Instance.selectedPiece = null;
+				return;
+			} else if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece != this) {
+				Debug.Log("Another piece is already selected");
+				return;
+			}
+
+			GameManager.Instance.selectedPiece = this;
+			ToggleHighlight(true);
+			HighlightLegalMoves();
 		}
-
-		GameManager.Instance.selectedPiece = this;
-		ToggleHighlight(true);
-		HighlightLegalMoves();
 	}
 
 	// On XR deselect interaction
 	public void OnXRPieceDeselect(SelectExitEventArgs args) {
-		if(!enabled)
-			return;
+		if(enabled) {
+			//ToggleHighlight(false);
+			//RemoveAllHighlights();
+			//GameManager.Instance.selectedPiece = null;
+		}
+	}
 
-		
+	// On XR hover enter interaction
+	public void OnXRPieceHoverEnter(HoverEnterEventArgs args) {
+		// Bool allowed if (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove
+		bool allowed = (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove;
 
-		//ToggleHighlight(false);
-		//RemoveAllHighlights();
-		//GameManager.Instance.selectedPiece = null;
+		Debug.Log("Hover enter");
+
+		if(enabled && allowed) {
+			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) return;
+
+			// Change piece material to hoverMaterial.
+			thisTransform.GetComponent<MeshRenderer>().material = hoverMaterial;
+		}
+	}
+
+	// On XR hover exit interaction
+	public void OnXRPieceHoverExit(HoverExitEventArgs args) {
+		if(enabled) {
+			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) return;
+
+			// Reset piece material to originalMaterial.
+			thisTransform.GetComponent<MeshRenderer>().material = originalMaterial;
+		}
 	}
 
 	// Toggle on/off the piece highlight
 	public void ToggleHighlight(bool toggle) {
 		if (toggle) {
 			// Change piece material to highlightMaterial.
-			originalMaterial = thisTransform.GetComponent<MeshRenderer>().material;
 			thisTransform.GetComponent<MeshRenderer>().material = highlightMaterial;
 		} else {
 			// Reset piece material to originalMaterial.
@@ -220,7 +245,11 @@ public class VisualPiece : MonoBehaviour {
 	// Remove all highlights
 	public void RemoveAllHighlights() {
 		foreach (GameObject boardHighlight in boardHighlights) {
-			Destroy(boardHighlight);
+			// Execute destroy on Unity main thread
+			UnityThread.executeInUpdate(() =>
+            {
+				Destroy(boardHighlight);
+            });
 		}
 		boardHighlights.Clear();
 	}

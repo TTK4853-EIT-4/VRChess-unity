@@ -104,6 +104,7 @@ MonoBehaviour:
     type: 3}
   originalMaterial: {fileID: 2100000, guid: bb0c9adc9b877914399944d8e49a5ccc, type: 2}
   highlightMaterial: {fileID: 2100000, guid: 2c99ed62de32df14ba4faafdfc7b1e90, type: 2}
+  hoverMaterial: {fileID: 2100000, guid: 6c06dd5c7feab1e409149f4810816680, type: 2}
 --- !u!135 &563021803
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -185,10 +186,34 @@ MonoBehaviour:
       m_Calls: []
   m_HoverEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114170461942959058}
+        m_TargetAssemblyTypeName: VisualPiece, Assembly-CSharp
+        m_MethodName: OnXRPieceHoverEnter
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_HoverExited:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114170461942959058}
+        m_TargetAssemblyTypeName: VisualPiece, Assembly-CSharp
+        m_MethodName: OnXRPieceHoverExit
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_FirstSelectEntered:
     m_PersistentCalls:
       m_Calls: []

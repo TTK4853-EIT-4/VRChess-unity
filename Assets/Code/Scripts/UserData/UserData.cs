@@ -29,8 +29,8 @@ public class UserData : MonoBehaviour
 
     // Enum for the type of the user (White, Black or Observer)
 	public enum PlayerSide {
-		White,
-		Black,
-		Observer
+        Observer,
+        Black,
+		White
 	}
 }
