@@ -336,7 +336,8 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 			move = new {
 				source = start.ToString(),
 				target = end.ToString(),
-				piece = movedPiece.ToShortAlgebraic()
+				piece = movedPiece.ToShortAlgebraic(),
+				promotedPiece = default(object) // Null
 			}
 		};
 
