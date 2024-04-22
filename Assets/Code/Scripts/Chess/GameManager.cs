@@ -14,7 +14,11 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 	public static event Action GameResetToHalfMoveEvent;
 	public static event Action MoveExecutedEvent;
 
+	public GameObject choosePromotionUIPanel;
+
 	public VisualPiece selectedPiece { get; set; } = null;
+
+	private PieceMove pieceMove = new PieceMove();
 	
 	public Board CurrentBoard {
 		get {
@@ -95,6 +99,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 #else
 	public async void StartNewGame(bool isWhiteAI = false, bool isBlackAI = false) {
 #endif
+		ClosePromotionUI();
 		game = new Game();
 
 		this.isWhiteAI = isWhiteAI;
@@ -125,6 +130,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 	}
 	
 	public void LoadGame(string serializedGame) {
+		choosePromotionUIPanel.SetActive(false);
 		game = serializersByType[selectedSerializationType].Deserialize(serializedGame);
 		NewGameStartedEvent?.Invoke();
 	}
@@ -322,27 +328,61 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 			: null;
 	}
 
+	private VisualPiece pieceToMoveTemp;
+	private Piece movedPieceTemp;
 	// Piece move
-	public void MovePiece(Square start, Square end, VisualPiece promotionPiece) {
-		//if (!game.TryGetLegalMove(start, end, out Movement move)) return;
-		//TryExecuteMove(move);
+	public void MovePiece(Square start, Square end, VisualPiece pieceToMove) {
+		pieceToMoveTemp = pieceToMove;
+		movedPieceTemp = CurrentBoard[start];
 
-		Piece movedPiece = CurrentBoard[start];
+		Debug.Log($"Try piece move {movedPieceTemp.ToShortAlgebraic()} from {start} to {end}");
 
-		// Data to send to the socket server if format: { "room_id": "###", "color": "1|2", "move": { "source": "c7", "target": "c5", "piece": "bP" } }
-		var data = new {
+		pieceMove = new PieceMove
+		{
 			room_id = UserData.Instance.currentRoom.roomId,
-			color = movedPiece.Owner == Side.White ? "1" : "2",
-			move = new {
+			color = movedPieceTemp.Owner == Side.White ? "1" : "2",
+			move = new MoveData
+			{
 				source = start.ToString(),
 				target = end.ToString(),
-				piece = movedPiece.ToShortAlgebraic(),
-				promotedPiece = default(object) // Null
+				piece = movedPieceTemp.ToShortAlgebraic(),
+				promotedPiece = ""
 			}
 		};
 
-		Debug.Log($"Piece {movedPiece.ToShortAlgebraic()} moved from {start} to {end}");
+		// Check if the move is pawn promotion
+		if (movedPieceTemp is Pawn && (end.Rank == 1 || end.Rank == 8)) {
+			// Show the promotion UI
+			OpenPromotionUI();
+			return;
+		}
 
+		SendPieceMoved();
+	}
+
+	// Open the promotion UI and set it to possition in fromn of the camera and lock it to the camera movement
+	public void OpenPromotionUI() {
+		// Set the position of the promotion UI to be in front of the camera
+		choosePromotionUIPanel.transform.position = Camera.main.transform.position + Camera.main.transform.forward * 2;
+		choosePromotionUIPanel.transform.rotation = Camera.main.transform.rotation;
+
+		choosePromotionUIPanel.SetActive(true);
+	}
+
+	// Promotion execute
+	public void PromotionExecute(string promotedPiece) {
+		// Set the promoted piece to the piece move data
+		pieceMove.move.promotedPiece = promotedPiece;
+
+		// Send the piece move to the server
+		SendPieceMoved();
+
+		ClosePromotionUI();
+	}
+
+	// Send piece_moved to the server
+	public void SendPieceMoved() {
+		Debug.Log($"Piece {movedPieceTemp.ToShortAlgebraic()} moved from {pieceMove.move.source} to {pieceMove.move.target}. Room ID: {pieceMove.room_id}");
 		SocketManager.Instance.socket.Emit("piece_move", response =>
         {
             try
@@ -357,8 +397,8 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 
 					UnityThread.executeInUpdate(() =>
                     {
-						promotionPiece.ToggleHighlight(false);
-						promotionPiece.RemoveAllHighlights();
+						pieceToMoveTemp.ToggleHighlight(false);
+						pieceToMoveTemp.RemoveAllHighlights();
                         LoadGame(fen);
                     });
                 } else {
@@ -368,8 +408,8 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
 					Debug.Log(respons.message);
 					UnityThread.executeInUpdate(() =>
                     {
-                        promotionPiece.ToggleHighlight(false);
-						promotionPiece.RemoveAllHighlights();
+                        pieceToMoveTemp.ToggleHighlight(false);
+						pieceToMoveTemp.RemoveAllHighlights();
                     });
 				}
             }
@@ -377,8 +417,46 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
             {
                 Debug.Log(e);
             }
-        }, data);
+        }, pieceMove);
+	}
 
+	// Close the promotion UI and unlock it from the camera movement
+	public void ClosePromotionUI() {
+		choosePromotionUIPanel.SetActive(false);
+	}
+
+	// On promotion buttons click
+	
+	// On queen promotion button click
+	public void OnQueenPromotionClick() {
+		PromotionExecute("q");
+	}
+
+	// On rook promotion button click
+	public void OnRookPromotionClick() {
+		PromotionExecute("r");
+	}
+
+	// On bishop promotion button click
+	public void OnBishopPromotionClick() {
+		PromotionExecute("b");
+	}
+
+	// On knight promotion button click
+	public void OnKnightPromotionClick() {
+		PromotionExecute("n");
+	}
+
+	// On promotion cancel button click
+	public void OnPromotionCancelClick() {
+		ClosePromotionUI();
+
+		// Reset the selected piece
+		pieceToMoveTemp.ToggleHighlight(false);
+		pieceToMoveTemp.RemoveAllHighlights();
+		pieceToMoveTemp = null;
+		movedPieceTemp = null;
+		selectedPiece = null;
 	}
 
 

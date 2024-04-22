@@ -186,7 +186,7 @@ public class VisualPiece : MonoBehaviour {
 		// Bool allowed if (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove
 		bool allowed = (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove;
 
-		Debug.Log("Hover enter");
+		Debug.Log("Hover enter: " + GameManager.Instance.SideToMove);
 
 		if(enabled && allowed) {
 			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) return;

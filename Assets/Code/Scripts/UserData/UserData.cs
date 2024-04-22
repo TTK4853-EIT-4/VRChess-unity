@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityChess;
 using UnityEngine;
 
 public class UserData : MonoBehaviour
@@ -9,6 +10,8 @@ public class UserData : MonoBehaviour
     public User loggedUser { get; set; }
     public Room currentRoom { get; set; }
     public User opponentUser { get; set; }
+    public PieceMove pieceToMove { get; set; }
+    public SendPieceMovedData sendPieceMovedData { get; set; }
 
     // Specifying the player side (White, Black or Observer)
 	public PlayerSide playerSide { get; set; } = PlayerSide.Observer;
