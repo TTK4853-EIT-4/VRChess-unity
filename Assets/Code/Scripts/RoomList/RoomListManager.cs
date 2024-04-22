@@ -46,6 +46,13 @@ public class RoomListManager : MonoBehaviour
         {
             Debug.LogError(e);
         }
+
+        // On room_updated event
+        SocketManager.Instance.socket.On("room_updated", response =>
+        {
+            Room room = JsonConvert.DeserializeObject<Room>(response.GetValue<string>(0));
+            UpdateRoom(room);
+        });
     }
 
     // Start is called before the first frame update
@@ -88,13 +95,6 @@ public class RoomListManager : MonoBehaviour
                     uIRooms.Remove(room);
                 });
             }
-        });
-
-        // On room_updated event
-        SocketManager.Instance.socket.On("room_updated", response =>
-        {
-            Room room = JsonConvert.DeserializeObject<Room>(response.GetValue<string>(0));
-            UpdateRoom(room);
         });
     }
 
@@ -377,6 +377,7 @@ public class RoomListManager : MonoBehaviour
                 if (respons.status == "success")
                 {
                     Room room = JsonConvert.DeserializeObject<Room>(respons.data);
+                    UserData.Instance.currentRoom = room;
 
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
@@ -412,6 +413,16 @@ public class RoomListManager : MonoBehaviour
                 createRoomStatusMessageText.color = successColor;
             }
         });
+    }
+
+    // generate a message when the game shuts down or switches to another Scene
+    void OnDestroy()
+    {
+        // Stop listening for events
+        SocketManager.Instance.socket.Off("room_updated");
+        SocketManager.Instance.socket.Off("room_created");
+        SocketManager.Instance.socket.Off("room_deleted");
+
     }
 }
 
