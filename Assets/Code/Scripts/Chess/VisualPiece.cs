@@ -41,121 +41,21 @@ public class VisualPiece : MonoBehaviour {
 
 	public void OnMouseDown() {
 		return;
-		Debug.Log("Piece clicked");
-
-		// Disable the white piece if the player is black
-		if (UserData.Instance.playerSide == UserData.PlayerSide.Observer) {
-			BoardManager.Instance.SetActiveAllPieces(false);
-		}
-
-		// Check if it is players turn
-		if (GameManager.Instance.SideToMove != PieceColor) {
-			BoardManager.Instance.SetActiveAllPieces(false);
-		}
-
-		// Check if the player is the same color
-		if (UserData.Instance.playerSide == UserData.PlayerSide.White && PieceColor == Side.Black) {
-			BoardManager.Instance.SetActiveAllPieces(false);
-		} else if (UserData.Instance.playerSide == UserData.PlayerSide.Black && PieceColor == Side.White) {
-			BoardManager.Instance.SetActiveAllPieces(false);
-		} else {
-			BoardManager.Instance.EnsureOnlyPiecesOfSideAreEnabled(PieceColor);
-		}
-
-		if (enabled) {
-			piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
-
-			var piece = GameManager.Instance.CurrentBoard[CurrentSquare];
-			var legalMoves = GameManager.Instance.GetLegalMovesForPiece(piece);
-
-			if (legalMoves.Count == 0) {
-				return;
-			} else {
-				// Change piece material to highlightMaterial.
-				originalMaterial = thisTransform.GetComponent<MeshRenderer>().material;
-				thisTransform.GetComponent<MeshRenderer>().material = highlightMaterial;
-
-				foreach (Movement move in legalMoves) {
-					GameObject squareGO = BoardManager.Instance.GetSquareGOByPosition(move.End);
-					
-					// Highlight position x=0, y=0.05, z=0 of the square.
-					var position = squareGO.transform.position;
-					position.y = position.y + 0.01f;
-
-					GameObject highlight = Instantiate(boardHighlightPrefab, position, Quaternion.identity);
-					//GameObject boardHighlight = Instantiate(boardHighlightPrefab, squareGO.transform);
-					boardHighlights.Add(highlight);
-				}
-
-			}
-
-			// Show potential landing squares.
-			/*potentialLandingSquares.Clear();
-			BoardManager.Instance.GetSquareGOsWithinRadius(potentialLandingSquares, thisTransform.position, SquareCollisionRadius);
-			foreach (GameObject potentialLandingSquare in potentialLandingSquares) {
-
-				// Create new boardHighlightPrefab and add it to the potentialLandingSquare.
-				GameObject boardHighlight = Instantiate(boardHighlightPrefab, potentialLandingSquare.transform);
-				boardHighlights.Add(boardHighlight);
-				
-			}*/
-
-
-		}
 	}
 
 	private void OnMouseDrag() {
-		if (enabled) {
-			// Move piece only in x and z axes but follow mouse in screen space.
-			Vector3 mousePositionSS = new Vector3(Input.mousePosition.x, Input.mousePosition.y, piecePositionSS.z);
-			Vector3 mousePositionWS = boardCamera.ScreenToWorldPoint(mousePositionSS);
-			thisTransform.position = new Vector3(mousePositionWS.x, thisTransform.position.y, mousePositionWS.z);
-
-
-
-		}
+		return;
 	}
 
 	public void OnMouseUp() {
-		if (enabled) {
-			potentialLandingSquares.Clear();
-			BoardManager.Instance.GetSquareGOsWithinRadius(potentialLandingSquares, thisTransform.position, SquareCollisionRadius);
-
-			if (potentialLandingSquares.Count == 0) { // piece moved off board
-				thisTransform.position = thisTransform.parent.position;
-				return;
-			}
-	
-			// determine closest square out of potential landing squares.
-			Transform closestSquareTransform = potentialLandingSquares[0].transform;
-			float shortestDistanceFromPieceSquared = (closestSquareTransform.transform.position - thisTransform.position).sqrMagnitude;
-			for (int i = 1; i < potentialLandingSquares.Count; i++) {
-				GameObject potentialLandingSquare = potentialLandingSquares[i];
-				float distanceFromPieceSquared = (potentialLandingSquare.transform.position - thisTransform.position).sqrMagnitude;
-
-				if (distanceFromPieceSquared < shortestDistanceFromPieceSquared) {
-					shortestDistanceFromPieceSquared = distanceFromPieceSquared;
-					closestSquareTransform = potentialLandingSquare.transform;
-				}
-			}
-
-			// Reset piece material to originalMaterial.
-			thisTransform.GetComponent<MeshRenderer>().material = originalMaterial;
-
-			// Destroy potential landing squares highlights.
-			foreach (GameObject boardHighlight in boardHighlights) {
-				Destroy(boardHighlight);
-			}
-
-			VisualPieceMoved?.Invoke(CurrentSquare, thisTransform, closestSquareTransform);
-		}
+		return;
 	}
 
 	// On XR select interaction with select arguments
 	public void OnXRPieceSelect(SelectEnterEventArgs args) {
 		bool allowed = (Side)UserData.Instance.playerSide == GameManager.Instance.SideToMove;
 
-		if(enabled && allowed) {
+		if(enabled && allowed && UserData.Instance.currentRoom.gameStatus == GameStatus.STARTED) {
 			if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) {
 				ToggleHighlight(false);
 				RemoveAllHighlights();
@@ -188,7 +88,7 @@ public class VisualPiece : MonoBehaviour {
 
 		Debug.Log("Hover enter: " + GameManager.Instance.SideToMove);
 
-		if(enabled && allowed) {
+		if(enabled && allowed && UserData.Instance.currentRoom.gameStatus == GameStatus.STARTED) {
 			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) return;
 
 			// Change piece material to hoverMaterial.

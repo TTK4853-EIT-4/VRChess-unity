@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityChess;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,11 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	[SerializeField, Range(-0.25f, 0.25f)] private float buttonColorDarkenAmount = 0f;
 	[SerializeField, Range(-0.25f, 0.25f)] private float moveHistoryAlternateColorDarkenAmount = 0f;
 	
+
+	// Custom fields
+	[SerializeField] public TMP_Text detailsText = null;
+	[SerializeField] public TMP_Text observersText = null;
+
 	private Timeline<FullMoveUI> moveUITimeline;
 	private Color buttonColor;
 
@@ -27,6 +33,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		GameManager.GameEndedEvent += OnGameEnded;
 		GameManager.MoveExecutedEvent += OnMoveExecuted;
 		GameManager.GameResetToHalfMoveEvent += OnGameResetToHalfMove;
+		GameNetwork.GameDataUpdatedEvent += OnGameDataUpdated;
 		
 		moveUITimeline = new Timeline<FullMoveUI>();
 		foreach (Text boardInfoText in boardInfoTexts) {
@@ -34,6 +41,45 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		}
 
 		buttonColor = new Color(backgroundColor.r - buttonColorDarkenAmount, backgroundColor.g - buttonColorDarkenAmount, backgroundColor.b - buttonColorDarkenAmount);
+	}
+
+	// On Awale
+	private void Awake() {
+		OnGameDataUpdated();
+	}
+
+	private void OnGameDataUpdated() {
+		string status = "Playing";
+		if (UserData.Instance.currentRoom.gameStatus == GameStatus.ENDED) {
+			status = "Finished";
+		} else if (UserData.Instance.currentRoom.gameStatus == GameStatus.WAITING) {
+			status = "Waiting";
+		}
+
+		string opponent = "None";
+		string opponentSide = "";
+		if (UserData.Instance.currentRoom.roomOpponent != null) {
+			opponent = UserData.Instance.currentRoom.roomOpponent.username;
+			opponentSide = UserData.Instance.currentRoom.roomOwnerSide == SideColor.WHITE ? "(b)" : "(w)";
+		}
+
+		string ownerSide = UserData.Instance.currentRoom.roomOwnerSide == SideColor.WHITE ? "(w)" : "(b)";
+
+		detailsText.text = "Game Status: " + status + "\n";
+		detailsText.text += "Owner: " + UserData.Instance.currentRoom.roomOwner.username + " " + ownerSide + "\n";
+		detailsText.text += "Opponent: " + opponent + " " + opponentSide + "\n";
+
+		if(UserData.Instance.currentRoom.gameStatus == GameStatus.ENDED) {
+			detailsText.text += "Winner: " + UserData.Instance.currentRoom.gameWinner.username + "\n";
+		}
+
+		observersText.text = "";
+		int i = 1;
+		foreach (User observer in UserData.Instance.currentRoom.observers) {
+			string you = observer.username == UserData.Instance.loggedUser.username ? " (You)" : "";
+			observersText.text += i.ToString() + ". " + observer.username + you + "\n";
+			i++;
+		}
 	}
 
 	private void OnNewGameStarted() {

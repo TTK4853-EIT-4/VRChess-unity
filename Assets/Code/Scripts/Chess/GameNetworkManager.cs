@@ -1,9 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class GameNetwork : MonoBehaviour
 {
+
+    public static event Action GameDataUpdatedEvent;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,6 +43,35 @@ public class GameNetwork : MonoBehaviour
             }
         });
 
+        // On room_updated_ event
+        SocketManager.Instance.socket.On("room_updated_", (data) =>
+        {
+            Debug.Log("Room updated event received");
+            Debug.Log(data);
+
+            try
+            {
+                Room room = JsonConvert.DeserializeObject<Room>(data.GetValue<string>(0));
+
+                // Execute on unity main thread
+                UnityThread.executeInUpdate(() =>
+                {
+                    UserData.Instance.currentRoom = room;
+                    GameDataUpdatedEvent?.Invoke();
+
+                    if (room.gameStatus == GameStatus.ENDED)
+                    {
+                        NotificationsManager.Instance.ShowNotification("Game Over!", 3, "info");
+                    }
+
+                });
+            }
+            catch (System.Exception e)
+            {
+                Debug.Log(e);
+            }
+        });
+
 
 
         var data = new { room_id = UserData.Instance.currentRoom.roomId };
@@ -48,7 +82,10 @@ public class GameNetwork : MonoBehaviour
 
             if (result.status == "success")
             {
-                Debug.Log("Subscribed to room " + data);
+                Room room = JsonConvert.DeserializeObject<Room>(result.data);
+                UserData.Instance.currentRoom = room;
+                Debug.Log("Subscribed to room " + data + ", room observers: " + room.observers.Count);
+                GameDataUpdatedEvent?.Invoke();
             }
             else
             {

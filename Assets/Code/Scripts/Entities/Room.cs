@@ -3,22 +3,22 @@ using Newtonsoft.Json;
 
 public enum GameStatus
 {
-    Waiting = 1,
-    Playing = 2,
-    Finished = 3
+    WAITING = 1,
+    STARTED = 2,
+    ENDED = 3
 }
 
 public enum PlayerMode
 {
-    Standard = 1, // # Standard multiplayer game with two players on different devices/clients
-    Board_two_players = 2 // Two players on the same physical board
+    STANDARD = 1, // # Standard multiplayer game with two players on different devices/clients
+    BOARD_TWO_PLAYER = 2 // Two players on the same physical board
     // For BOARD_TWO_PLAYERS the opponent will be set by username on the room creation
 }
 
 public enum SideColor
 {
-    White = 0,
-    Black = 1
+    WHITE = 0,
+    BLACK = 1
 }
 
 [System.Serializable]
