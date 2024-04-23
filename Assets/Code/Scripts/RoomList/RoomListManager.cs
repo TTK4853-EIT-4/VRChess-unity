@@ -267,7 +267,7 @@ public class RoomListManager : MonoBehaviour
                     {
                         // Determine side
                         UserData.Instance.playerSide = UserData.PlayerSide.Black;
-                        if (room.roomOwnerSide == SideColor.Black) {
+                        if (room.roomOwnerSide == SideColor.BLACK) {
                             UserData.Instance.playerSide = UserData.PlayerSide.White;
                         }
                         SceneManager.LoadScene("GameScene");
@@ -296,26 +296,11 @@ public class RoomListManager : MonoBehaviour
                 NotificationsManager.Instance.ShowNotification(respons.message, 3, respons.status);
                 if (respons.status == "success")
                 {
-                    // Subscribe to the room to receive events
-                    SocketManager.Instance.socket.Emit("subscribe_to_room", response =>
-                    {
-                        var result = response.GetValue<StatusResponse>(0);
-
-                        if (result.status == "success")
-                        {
-                            Debug.Log("Subscribed to room " + room.roomId);
-                        }
-                        else
-                        {
-                            Debug.Log("Failed to subscribe to room " + room.roomId);
-                            return;
-                        }
-
-                    }, data);
-
                     // Open the game scene. Execute on unity thread
                     UnityThread.executeInUpdate(() =>
                     {
+                        room.observers.Add(UserData.Instance.loggedUser);
+                        UserData.Instance.currentRoom = room;
                         UserData.Instance.playerSide = UserData.PlayerSide.Observer;
                         SceneManager.LoadScene("GameScene");
                     });
@@ -360,7 +345,7 @@ public class RoomListManager : MonoBehaviour
     public void OnCreateRoomButtonClick()
     {
         var data = new {
-            player_mode = PlayerMode.Standard, // Standard mode with 2 players on 2 different clients
+            player_mode = PlayerMode.STANDARD, // Standard mode with 2 players on 2 different clients
             opponent = default(object), // == Null
             side = teamColorDropdown.value == 0 ? "white" : "black"
         };
@@ -383,7 +368,7 @@ public class RoomListManager : MonoBehaviour
                     UnityThread.executeInUpdate(() =>
                     {
                         UserData.Instance.playerSide = UserData.PlayerSide.Black;
-                        if (room.roomOwnerSide == SideColor.White) {
+                        if (room.roomOwnerSide == SideColor.WHITE) {
                             UserData.Instance.playerSide = UserData.PlayerSide.White;
                         }
                         SceneManager.LoadScene("GameScene");

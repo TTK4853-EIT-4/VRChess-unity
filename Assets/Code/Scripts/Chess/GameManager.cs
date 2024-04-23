@@ -267,43 +267,6 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
         }, data);
 
 		return;
-
-		if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move)) {
-			movedPieceTransform.position = movedPieceTransform.parent.position;
-#if DEBUG_VIEW
-			Piece movedPiece = CurrentBoard[movedPieceInitialSquare];
-			game.TryGetLegalMovesForPiece(movedPiece, out ICollection<Movement> legalMoves);
-			UnityChessDebug.ShowLegalMovesInLog(legalMoves);
-#endif
-			return;
-		}
-
-		if (move is PromotionMove promotionMove) {
-			promotionMove.SetPromotionPiece(promotionPiece);
-		}
-
-		if ((move is not SpecialMove specialMove || await TryHandleSpecialMoveBehaviourAsync(specialMove))
-		    && TryExecuteMove(move)
-		) {
-			if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(move.End); }
-
-			if (move is PromotionMove) {
-				movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
-			}
-
-			movedPieceTransform.parent = closestBoardSquareTransform;
-			movedPieceTransform.position = closestBoardSquareTransform.position;
-		}
-
-		bool gameIsOver = game.HalfMoveTimeline.TryGetCurrent(out HalfMove lastHalfMove)
-		                  && lastHalfMove.CausedStalemate || lastHalfMove.CausedCheckmate;
-		if (!gameIsOver
-			&& (SideToMove == Side.White && isWhiteAI
-			    || SideToMove == Side.Black && isBlackAI)
-		) {
-			Movement bestMove = await uciEngine.GetBestMove(10_000);
-			DoAIMove(bestMove);
-		}
 	}
 
 	private void DoAIMove(Movement move) {
