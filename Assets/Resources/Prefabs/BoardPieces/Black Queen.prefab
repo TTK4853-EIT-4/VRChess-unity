@@ -105,6 +105,7 @@ MonoBehaviour:
   originalMaterial: {fileID: 2100000, guid: 8bae13861d4c71d4dae275272a10c845, type: 2}
   highlightMaterial: {fileID: 2100000, guid: 2c99ed62de32df14ba4faafdfc7b1e90, type: 2}
   hoverMaterial: {fileID: 2100000, guid: 6c06dd5c7feab1e409149f4810816680, type: 2}
+  captureMaterial: {fileID: 2100000, guid: 275e4c91645f7d041b1520591a961c28, type: 2}
 --- !u!135 &318399455
 SphereCollider:
   m_ObjectHideFlags: 0

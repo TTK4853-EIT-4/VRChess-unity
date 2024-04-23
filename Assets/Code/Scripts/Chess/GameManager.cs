@@ -254,6 +254,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
                         LoadGame(fen);
                     });
                 } else {
+					NotificationsManager.Instance.ShowNotification(respons.message, 3, "error");
 					// It is not a legal move.
 					// Reset the piece to its original position.
 					movedPieceTransform.position = movedPieceTransform.parent.position;
@@ -365,6 +366,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager> {
                         LoadGame(fen);
                     });
                 } else {
+					NotificationsManager.Instance.ShowNotification(respons.message, 3, "error");
 					// It is not a legal move.
 					// Reset the piece to its original position.
 					//movedPieceTransform.position = movedPieceTransform.parent.position;

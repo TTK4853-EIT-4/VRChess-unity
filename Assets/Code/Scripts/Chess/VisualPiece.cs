@@ -30,6 +30,9 @@ public class VisualPiece : MonoBehaviour {
 	// Hover Material
 	public Material hoverMaterial;
 
+	// Hover Material When can be captured
+	public Material captureMaterial;
+
 
 	private List<GameObject> boardHighlights = new List<GameObject>();
 
@@ -70,6 +73,22 @@ public class VisualPiece : MonoBehaviour {
 			ToggleHighlight(true);
 			HighlightLegalMoves();
 		}
+
+		// If selected piece is not null and can capture this piece
+		if (GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece != this) {
+			// Get the selected piece and its square
+			VisualPiece selectedPiece = GameManager.Instance.selectedPiece;
+			Square selectedSquare = selectedPiece.CurrentSquare;
+
+			// Check if this piece can be captured
+			foreach (Movement movement in GameManager.Instance.GetLegalMovesForPiece(GameManager.Instance.CurrentBoard[selectedSquare])) {
+				if (movement.End == CurrentSquare) {
+					// Make move
+					Debug.Log("Square clicked: " + CurrentSquare.ToString());
+					GameManager.Instance.MovePiece(selectedSquare, CurrentSquare, selectedPiece);
+				}
+			}
+		}
 	}
 
 	// On XR deselect interaction
@@ -89,7 +108,7 @@ public class VisualPiece : MonoBehaviour {
 		Debug.Log("Hover enter: " + GameManager.Instance.SideToMove);
 
 		if(enabled && allowed && UserData.Instance.currentRoom.gameStatus == GameStatus.STARTED) {
-			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece == this) return;
+			if(GameManager.Instance.selectedPiece != null && GameManager.Instance.selectedPiece != this) return;
 
 			// Change piece material to hoverMaterial.
 			thisTransform.GetComponent<MeshRenderer>().material = hoverMaterial;
