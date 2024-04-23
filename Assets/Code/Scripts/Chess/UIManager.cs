@@ -24,6 +24,8 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	// Custom fields
 	[SerializeField] public TMP_Text detailsText = null;
 	[SerializeField] public TMP_Text observersText = null;
+	[SerializeField] public GameObject XROrigin = null;
+	[SerializeField] public GameObject whiteBoard = null;
 
 	private Timeline<FullMoveUI> moveUITimeline;
 	private Color buttonColor;
@@ -46,6 +48,40 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	// On Awale
 	private void Awake() {
 		OnGameDataUpdated();
+
+		// Set the camera view point based on the player side or if the player is an observer
+		if (UserData.Instance.playerSide == UserData.PlayerSide.White) {
+			// Position: x = 0.7122346, y = 10, z = -12.26
+			// Rotation: x = 0, y = 0, z = 0
+			XROrigin.transform.position = new Vector3(0.7122346f, 10f, -12.26f);
+			XROrigin.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+
+			// WhiteBoard postinion: x = 16.38169, y = 0, z = 0.9038709
+			// WhiteBoard rotation: x = 0, y = -114.46, z = 0
+			whiteBoard.transform.position = new Vector3(16.38169f, 0f, 0.9038709f);
+			whiteBoard.transform.rotation = Quaternion.Euler(0f, -114.46f, 0f);
+			
+		} else if (UserData.Instance.playerSide == UserData.PlayerSide.Black) {
+			// Position: x = 0.7122346, y = 10, z = 16.1
+			// Rotation: x = 0, y = 180, z = 0
+			XROrigin.transform.position = new Vector3(0.7122346f, 10f, 16.1f);
+			XROrigin.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+
+			// WhiteBoard postinion: x = 16.64706, y = 0, z = 0.7874842
+			// WhiteBoard rotation: x = 0, y = -69.869, z = 0
+			whiteBoard.transform.position = new Vector3(16.64706f, 0f, 0.7874842f);
+			whiteBoard.transform.rotation = Quaternion.Euler(0f, -69.869f, 0f);
+		} else {
+			// Position: x = -13.09, y = 10, z = 0.72
+			// Rotation: x = 0, y = 90, z = 0
+			XROrigin.transform.position = new Vector3(-13.09f, 10f, 0.72f);
+			XROrigin.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+
+			// WhiteBoard postinion: x = 16.53909, y = 0, z = 0.8657131
+			// WhiteBoard rotation: x = 0, y = -89.976, z = 0
+			whiteBoard.transform.position = new Vector3(16.53909f, 0f, 0.8657131f);
+			whiteBoard.transform.rotation = Quaternion.Euler(0f, -89.976f, 0f);
+		}
 	}
 
 	private void OnGameDataUpdated() {
